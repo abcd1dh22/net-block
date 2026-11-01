@@ -1,0 +1,48 @@
+name: Build APK
+
+on:
+  push:
+    branches: [main, master]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: 8.9
+
+      # Uses your permanent key when the secrets exist, otherwise falls back to the debug key.
+      - name: Prepare signing key
+        env:
+          KS_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+          KS_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KS_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KS_KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+        run: |
+          if [ -n "$KS_BASE64" ]; then
+            echo "$KS_BASE64" | base64 -d > "$RUNNER_TEMP/release.jks"
+            echo "KEYSTORE_FILE=$RUNNER_TEMP/release.jks" >> "$GITHUB_ENV"
+            echo "KEYSTORE_PASSWORD=$KS_PASSWORD" >> "$GITHUB_ENV"
+            echo "KEY_ALIAS=$KS_ALIAS" >> "$GITHUB_ENV"
+            echo "KEY_PASSWORD=$KS_KEY_PASSWORD" >> "$GITHUB_ENV"
+            echo "Using the permanent release key."
+          else
+            echo "No signing secrets found. Using the debug key."
+          fi
+
+      - name: Build release APK
+        run: gradle assembleRelease -PappVersionName=dev -PappVersionCode=$(date +%s)
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: NetBlock-apk
+          path: app/build/outputs/apk/release/app-release.apk
