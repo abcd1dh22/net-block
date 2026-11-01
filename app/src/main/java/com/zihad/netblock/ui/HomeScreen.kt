@@ -12,12 +12,15 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Apps
 import androidx.compose.material.icons.filled.BarChart
 import androidx.compose.material.icons.filled.Cancel
+import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -54,21 +57,11 @@ fun HomeScreen(
     val c = LocalAppColors.current
     val apps by vm.apps.collectAsState()
     val rules by vm.rules.collectAsState()
-    val loading by vm.loading.collectAsState()
-    val stats by BlockStats.stats.collectAsState()
 
-    var query by remember { mutableStateOf("") }
-    var filter by remember { mutableStateOf(Filter.All) }
+    var tab by rememberSaveable { mutableIntStateOf(0) }
     var showSettings by remember { mutableStateOf(false) }
     var showActivity by remember { mutableStateOf(false) }
     var showGuide by remember { mutableStateOf(!vm.onboarded) }
-
-    val visible = remember(apps, rules, query, filter) {
-        apps.filter { app ->
-            (filter == Filter.All || app.pkg in rules) &&
-                (query.isBlank() || app.label.contains(query, ignoreCase = true))
-        }
-    }
 
     if (showSettings) {
         SettingsSheet(
@@ -82,180 +75,163 @@ fun HomeScreen(
     }
 
     Box(Modifier.fillMaxSize()) {
-    Scaffold(containerColor = c.bg) { padding ->
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(padding),
-            contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 32.dp)
-        ) {
-            item {
-                Row(
-                    Modifier
-                        .fillMaxWidth()
-                        .padding(top = 8.dp, start = 4.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(
-                        "Net Block",
-                        style = MaterialTheme.typography.headlineMedium,
-                        color = c.label,
-                        modifier = Modifier.weight(1f)
-                    )
-                    Box(
-                        Modifier
-                            .size(36.dp)
-                            .clip(CircleShape)
-                            .background(c.card)
-                            .clickable { showActivity = true },
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Icon(
-                            Icons.Filled.BarChart,
-                            contentDescription = "Activity",
-                            tint = c.blue,
-                            modifier = Modifier.size(20.dp)
-                        )
-                    }
-                    Spacer(Modifier.width(10.dp))
-                    Box(
-                        Modifier
-                            .size(36.dp)
-                            .clip(CircleShape)
-                            .background(c.card)
-                            .clickable { showSettings = true },
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Icon(
-                            Icons.Filled.Settings,
-                            contentDescription = "Settings",
-                            tint = c.blue,
-                            modifier = Modifier.size(20.dp)
-                        )
-                    }
-                }
-                Spacer(Modifier.height(16.dp))
-                StatusCard(running = running, rules = rules)
-                Spacer(Modifier.height(12.dp))
-                ProtectionButton(running = running, onClick = onToggleProtection)
-                Spacer(Modifier.height(24.dp))
-                SearchField(query = query, onChange = { query = it })
-                Spacer(Modifier.height(12.dp))
-                Segmented(
-                    options = listOf("All apps (${apps.size})", "Blocked (${rules.size})"),
-                    selected = filter.ordinal,
-                    onSelect = { filter = Filter.entries[it] }
+        Scaffold(
+            containerColor = c.bg,
+            bottomBar = { TabBar(selected = tab, onSelect = { tab = it }) }
+        ) { padding ->
+            if (tab == 0) {
+                DashboardScreen(
+                    vm = vm,
+                    apps = apps,
+                    rules = rules,
+                    running = running,
+                    onToggleProtection = onToggleProtection,
+                    onOpenApps = { tab = 1 },
+                    onOpenActivity = { showActivity = true },
+                    onOpenSettings = { showSettings = true },
+                    modifier = Modifier.padding(padding)
                 )
-                Spacer(Modifier.height(20.dp))
-                Text(
-                    "APPS",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = c.secondary,
-                    modifier = Modifier.padding(start = 16.dp, bottom = 6.dp)
+            } else {
+                AppsScreen(
+                    vm = vm,
+                    apps = apps,
+                    rules = rules,
+                    onSetRule = onSetRule,
+                    modifier = Modifier.padding(padding)
                 )
-            }
-
-            when {
-                loading -> item {
-                    Box(Modifier.fillMaxWidth().padding(40.dp), contentAlignment = Alignment.Center) {
-                        CircularProgressIndicator(color = c.blue)
-                    }
-                }
-                visible.isEmpty() -> item {
-                    val noBlocked = filter == Filter.Blocked && query.isBlank()
-                    EmptyState(
-                        title = if (noBlocked) "No Blocked Apps" else "No Results",
-                        body = if (noBlocked) "Switch to All apps and turn on the apps you want to cut off."
-                        else "Try a different name."
-                    )
-                }
-                else -> itemsIndexed(
-                    visible,
-                    key = { _, app -> app.pkg },
-                    contentType = { _, _ -> "app" }
-                ) { index, app ->
-                    AppRow(
-                        app = app,
-                        mode = rules[app.pkg],
-                        attempts = stats[app.pkg]?.count ?: 0,
-                        first = index == 0,
-                        last = index == visible.lastIndex,
-                        onChange = { onSetRule(app.pkg, it) }
-                    )
-                }
             }
         }
-    }
-    if (showGuide) {
-        Onboarding(onFinish = {
-            showGuide = false
-            vm.markOnboarded()
-        })
-    }
+        if (showGuide) {
+            Onboarding(onFinish = {
+                showGuide = false
+                vm.markOnboarded()
+            })
+        }
     }
 }
 
 @Composable
-private fun StatusCard(running: Boolean, rules: Map<String, BlockMode>) {
+private fun TabBar(selected: Int, onSelect: (Int) -> Unit) {
     val c = LocalAppColors.current
-    val both = rules.count { it.value == BlockMode.ALL }
-    val wifi = rules.count { it.value == BlockMode.WIFI }
-    val mobile = rules.count { it.value == BlockMode.MOBILE }
-
-    Column(
-        Modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(20.dp))
-            .background(c.card)
-    ) {
-        Row(Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
-            Image(
-                painter = painterResource(R.drawable.ic_launcher_background),
-                contentDescription = null,
-                modifier = Modifier
-                    .size(56.dp)
-                    .clip(RoundedCornerShape(14.dp))
-            )
-            Spacer(Modifier.width(14.dp))
-            Column(Modifier.weight(1f)) {
-                Text("Protection", style = MaterialTheme.typography.titleMedium, color = c.label)
-                Spacer(Modifier.height(2.dp))
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Box(
-                        Modifier
-                            .size(8.dp)
-                            .clip(CircleShape)
-                            .background(if (running) c.green else c.secondary)
-                    )
-                    Spacer(Modifier.width(6.dp))
-                    Text(
-                        if (running) "On" else "Off",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = if (running) c.green else c.secondary
-                    )
-                }
-            }
-        }
+    Column {
         HorizontalDivider(color = c.separator, thickness = 0.5.dp)
-        Row(Modifier.padding(vertical = 12.dp)) {
-            Stat("Both", both, Modifier.weight(1f))
-            Stat("Wi-Fi only", wifi, Modifier.weight(1f))
-            Stat("Mobile only", mobile, Modifier.weight(1f))
+        NavigationBar(containerColor = c.card, tonalElevation = 0.dp) {
+            val colors = NavigationBarItemDefaults.colors(
+                selectedIconColor = c.blue,
+                selectedTextColor = c.blue,
+                unselectedIconColor = c.secondary,
+                unselectedTextColor = c.secondary,
+                indicatorColor = Color.Transparent
+            )
+            NavigationBarItem(
+                selected = selected == 0,
+                onClick = { onSelect(0) },
+                icon = { Icon(Icons.Filled.Home, contentDescription = null) },
+                label = { Text("Home") },
+                colors = colors
+            )
+            NavigationBarItem(
+                selected = selected == 1,
+                onClick = { onSelect(1) },
+                icon = { Icon(Icons.Filled.Apps, contentDescription = null) },
+                label = { Text("Apps") },
+                colors = colors
+            )
+        }
+    }
+}
+
+/** The app list lives on its own tab so the home page stays a clean dashboard. */
+@Composable
+private fun AppsScreen(
+    vm: AppsViewModel,
+    apps: List<AppItem>,
+    rules: Map<String, BlockMode>,
+    onSetRule: (String, BlockMode?) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val c = LocalAppColors.current
+    val loading by vm.loading.collectAsState()
+    val stats by BlockStats.stats.collectAsState()
+
+    var query by remember { mutableStateOf("") }
+    var filter by remember { mutableStateOf(Filter.All) }
+
+    val visible = remember(apps, rules, query, filter) {
+        apps.filter { app ->
+            (filter == Filter.All || app.pkg in rules) &&
+                (query.isBlank() || app.label.contains(query, ignoreCase = true))
+        }
+    }
+
+    LazyColumn(
+        modifier = modifier.fillMaxSize(),
+        contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 24.dp)
+    ) {
+        item {
+            Text(
+                "Apps",
+                style = MaterialTheme.typography.headlineMedium,
+                color = c.label,
+                modifier = Modifier.padding(top = 8.dp, start = 4.dp)
+            )
+            Text(
+                "Choose which apps lose internet access.",
+                style = MaterialTheme.typography.bodyMedium,
+                color = c.secondary,
+                modifier = Modifier.padding(start = 4.dp, top = 2.dp)
+            )
+            Spacer(Modifier.height(16.dp))
+            SearchField(query = query, onChange = { query = it })
+            Spacer(Modifier.height(12.dp))
+            Segmented(
+                options = listOf("All apps (${apps.size})", "Blocked (${rules.size})"),
+                selected = filter.ordinal,
+                onSelect = { filter = Filter.entries[it] }
+            )
+            Spacer(Modifier.height(20.dp))
+            Text(
+                "APPS",
+                style = MaterialTheme.typography.bodySmall,
+                color = c.secondary,
+                modifier = Modifier.padding(start = 16.dp, bottom = 6.dp)
+            )
+        }
+
+        when {
+            loading -> item {
+                Box(Modifier.fillMaxWidth().padding(40.dp), contentAlignment = Alignment.Center) {
+                    CircularProgressIndicator(color = c.blue)
+                }
+            }
+            visible.isEmpty() -> item {
+                val noBlocked = filter == Filter.Blocked && query.isBlank()
+                EmptyState(
+                    title = if (noBlocked) "No Blocked Apps" else "No Results",
+                    body = if (noBlocked) "Switch to All apps and turn on the apps you want to cut off."
+                    else "Try a different name."
+                )
+            }
+            else -> itemsIndexed(
+                visible,
+                key = { _, app -> app.pkg },
+                contentType = { _, _ -> "app" }
+            ) { index, app ->
+                AppRow(
+                    app = app,
+                    mode = rules[app.pkg],
+                    attempts = stats[app.pkg]?.count ?: 0,
+                    first = index == 0,
+                    last = index == visible.lastIndex,
+                    onChange = { onSetRule(app.pkg, it) }
+                )
+            }
         }
     }
 }
 
 @Composable
-private fun Stat(label: String, value: Int, modifier: Modifier) {
-    val c = LocalAppColors.current
-    Column(modifier, horizontalAlignment = Alignment.CenterHorizontally) {
-        Text("$value", style = MaterialTheme.typography.titleLarge, color = c.label)
-        Text(label, style = MaterialTheme.typography.bodySmall, color = c.secondary)
-    }
-}
-
-@Composable
-private fun ProtectionButton(running: Boolean, onClick: () -> Unit) {
+internal fun ProtectionButton(running: Boolean, onClick: () -> Unit) {
     val c = LocalAppColors.current
     val haptic = LocalHapticFeedback.current
     val background by animateColorAsState(

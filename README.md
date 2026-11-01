@@ -60,6 +60,7 @@ It uses Android's built-in VPN service as a local filter, so it needs **no root*
 
 | | Feature | Details |
 |---|---|---|
+| 🏠 | **Dashboard** | A clean home page with a big protection card, separate Wi-Fi and mobile data status, live speed and the latest blocked attempts. The app list has its own tab |
 | 🎯 | **Per-app blocking** | Turn off the internet for only the apps you choose |
 | 📶 | **Wi-Fi and mobile data rules** | Block an app on both, on Wi-Fi only, or on mobile data only. Rules follow your current network automatically |
 | 🔲 | **Quick Settings tile** | Turn blocking on and off from the notification shade |
@@ -198,7 +199,8 @@ NetBlock/
 │   ├── BlockStats.kt          # Blocked-attempt counters and log
 │   ├── Prefs.kt               # Saves rules and settings
 │   └── ui/
-│       ├── HomeScreen.kt      # Status card, search, filters, app list
+│       ├── DashboardScreen.kt # Home tab: status, network cards, live activity
+│       ├── HomeScreen.kt      # Tabs, Apps tab (search, filters, list), settings
 │       ├── ActivitySheet.kt   # Activity screen (attempt counts and log)
 │       ├── Onboarding.kt      # First-run guide
 │       ├── AppIcon.kt         # Lazy icon loading with cache

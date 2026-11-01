@@ -2,10 +2,21 @@ package com.zihad.netblock
 
 import android.app.Application
 import android.content.Intent
+import android.net.ConnectivityManager
+import android.net.Network
+import android.net.NetworkCapabilities
+import android.net.NetworkRequest
+import android.net.TrafficStats
+import android.os.SystemClock
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
@@ -14,6 +25,12 @@ import java.net.HttpURLConnection
 import java.net.URL
 
 data class AppItem(val label: String, val pkg: String)
+
+/** Which networks the phone is connected to right now. */
+data class NetState(val wifi: Boolean = false, val mobile: Boolean = false)
+
+/** Whole-phone transfer speed in bytes per second (-1 when the device cannot report it). */
+data class Speed(val downBps: Long = 0, val upBps: Long = 0)
 
 sealed interface UpdateState {
     data object Idle : UpdateState
@@ -44,9 +61,74 @@ class AppsViewModel(app: Application) : AndroidViewModel(app) {
     /** Read once at start; the guide is shown when this is false. */
     val onboarded: Boolean = prefs.onboarded
 
+    // ---- Connected networks (for the Wi-Fi / Mobile data status cards) ----
+    private val connectivity = app.getSystemService(ConnectivityManager::class.java)
+    private val netLock = Any()
+    private val wifiNets = mutableSetOf<Network>()
+    private val cellNets = mutableSetOf<Network>()
+
+    private val _network = MutableStateFlow(NetState())
+    val network: StateFlow<NetState> = _network.asStateFlow()
+
+    private fun watcher(set: MutableSet<Network>) = object : ConnectivityManager.NetworkCallback() {
+        override fun onAvailable(network: Network) {
+            synchronized(netLock) { set.add(network); publishNetwork() }
+        }
+
+        override fun onLost(network: Network) {
+            synchronized(netLock) { set.remove(network); publishNetwork() }
+        }
+    }
+
+    private val wifiWatcher = watcher(wifiNets)
+    private val cellWatcher = watcher(cellNets)
+
+    private fun publishNetwork() {
+        _network.value = NetState(wifi = wifiNets.isNotEmpty(), mobile = cellNets.isNotEmpty())
+    }
+
+    private fun request(transport: Int) = NetworkRequest.Builder()
+        .addTransportType(transport)
+        .addCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
+        .build()
+
+    // ---- Live speed, sampled once a second while the dashboard is on screen ----
+    val speed: StateFlow<Speed> = flow {
+        var lastRx = TrafficStats.getTotalRxBytes()
+        var lastTx = TrafficStats.getTotalTxBytes()
+        var lastTime = SystemClock.elapsedRealtime()
+        while (true) {
+            delay(1000)
+            val rx = TrafficStats.getTotalRxBytes()
+            val tx = TrafficStats.getTotalTxBytes()
+            val time = SystemClock.elapsedRealtime()
+            val dt = (time - lastTime).coerceAtLeast(1)
+            if (rx < 0 || tx < 0 || lastRx < 0 || lastTx < 0) {
+                emit(Speed(-1, -1))
+            } else {
+                emit(Speed(((rx - lastRx) * 1000 / dt).coerceAtLeast(0), ((tx - lastTx) * 1000 / dt).coerceAtLeast(0)))
+            }
+            lastRx = rx
+            lastTx = tx
+            lastTime = time
+        }
+    }.flowOn(Dispatchers.IO).stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), Speed())
+
     init {
+        try {
+            connectivity.registerNetworkCallback(request(NetworkCapabilities.TRANSPORT_WIFI), wifiWatcher)
+            connectivity.registerNetworkCallback(request(NetworkCapabilities.TRANSPORT_CELLULAR), cellWatcher)
+        } catch (_: Exception) {
+            // Status cards simply show "Not connected".
+        }
         BlockStats.load(app)
         viewModelScope.launch(Dispatchers.IO) { loadApps() }
+    }
+
+    override fun onCleared() {
+        try { connectivity.unregisterNetworkCallback(wifiWatcher) } catch (_: Exception) {}
+        try { connectivity.unregisterNetworkCallback(cellWatcher) } catch (_: Exception) {}
+        super.onCleared()
     }
 
     fun markOnboarded() {
