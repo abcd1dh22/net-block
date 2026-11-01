@@ -38,6 +38,6 @@ fun AppIcon(pkg: String, modifier: Modifier = Modifier) {
     if (bitmap != null) {
         Image(bitmap = bitmap, contentDescription = null, modifier = modifier)
     } else {
-        Box(modifier.background(PanelHigh))
+        Box(modifier.background(LocalAppColors.current.fill))
     }
 }
