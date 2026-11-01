@@ -12,6 +12,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.BarChart
 import androidx.compose.material.icons.filled.Cancel
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Settings
@@ -36,6 +37,7 @@ import androidx.compose.ui.unit.sp
 import com.zihad.netblock.AppItem
 import com.zihad.netblock.AppsViewModel
 import com.zihad.netblock.BlockMode
+import com.zihad.netblock.BlockStats
 import com.zihad.netblock.BuildConfig
 import com.zihad.netblock.R
 import com.zihad.netblock.UpdateState
@@ -53,10 +55,13 @@ fun HomeScreen(
     val apps by vm.apps.collectAsState()
     val rules by vm.rules.collectAsState()
     val loading by vm.loading.collectAsState()
+    val stats by BlockStats.stats.collectAsState()
 
     var query by remember { mutableStateOf("") }
     var filter by remember { mutableStateOf(Filter.All) }
     var showSettings by remember { mutableStateOf(false) }
+    var showActivity by remember { mutableStateOf(false) }
+    var showGuide by remember { mutableStateOf(!vm.onboarded) }
 
     val visible = remember(apps, rules, query, filter) {
         apps.filter { app ->
@@ -66,9 +71,17 @@ fun HomeScreen(
     }
 
     if (showSettings) {
-        SettingsSheet(vm = vm, onDismiss = { showSettings = false })
+        SettingsSheet(
+            vm = vm,
+            onDismiss = { showSettings = false },
+            onShowGuide = { showSettings = false; showGuide = true }
+        )
+    }
+    if (showActivity) {
+        ActivitySheet(apps = apps, onDismiss = { showActivity = false })
     }
 
+    Box(Modifier.fillMaxSize()) {
     Scaffold(containerColor = c.bg) { padding ->
         LazyColumn(
             modifier = Modifier
@@ -89,6 +102,22 @@ fun HomeScreen(
                         color = c.label,
                         modifier = Modifier.weight(1f)
                     )
+                    Box(
+                        Modifier
+                            .size(36.dp)
+                            .clip(CircleShape)
+                            .background(c.card)
+                            .clickable { showActivity = true },
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            Icons.Filled.BarChart,
+                            contentDescription = "Activity",
+                            tint = c.blue,
+                            modifier = Modifier.size(20.dp)
+                        )
+                    }
+                    Spacer(Modifier.width(10.dp))
                     Box(
                         Modifier
                             .size(36.dp)
@@ -148,6 +177,7 @@ fun HomeScreen(
                     AppRow(
                         app = app,
                         mode = rules[app.pkg],
+                        attempts = stats[app.pkg]?.count ?: 0,
                         first = index == 0,
                         last = index == visible.lastIndex,
                         onChange = { onSetRule(app.pkg, it) }
@@ -155,6 +185,13 @@ fun HomeScreen(
                 }
             }
         }
+    }
+    if (showGuide) {
+        Onboarding(onFinish = {
+            showGuide = false
+            vm.markOnboarded()
+        })
+    }
     }
 }
 
@@ -334,6 +371,7 @@ private fun Segmented(
 private fun AppRow(
     app: AppItem,
     mode: BlockMode?,
+    attempts: Int,
     first: Boolean,
     last: Boolean,
     onChange: (BlockMode?) -> Unit
@@ -376,7 +414,7 @@ private fun AppRow(
                                 BlockMode.ALL -> "Blocked on Wi-Fi and mobile data"
                                 BlockMode.WIFI -> "Blocked on Wi-Fi only"
                                 BlockMode.MOBILE -> "Blocked on mobile data only"
-                            },
+                            } + (if (attempts > 0) " · $attempts ${if (attempts == 1) "attempt" else "attempts"}" else ""),
                             style = MaterialTheme.typography.bodySmall,
                             color = c.red
                         )
@@ -436,7 +474,7 @@ private fun IosSwitch(checked: Boolean, onCheckedChange: (Boolean) -> Unit, onCo
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun SettingsSheet(vm: AppsViewModel, onDismiss: () -> Unit) {
+private fun SettingsSheet(vm: AppsViewModel, onDismiss: () -> Unit, onShowGuide: () -> Unit) {
     val c = LocalAppColors.current
     val autoStart by vm.autoStart.collectAsState()
     val update by vm.update.collectAsState()
@@ -505,6 +543,21 @@ private fun SettingsSheet(vm: AppsViewModel, onDismiss: () -> Unit) {
                     Text("Version", style = MaterialTheme.typography.bodyLarge, color = c.label, modifier = Modifier.weight(1f))
                     Text(BuildConfig.VERSION_NAME, style = MaterialTheme.typography.bodyLarge, color = c.secondary)
                 }
+            }
+
+            Spacer(Modifier.height(16.dp))
+
+            Row(
+                Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(14.dp))
+                    .background(c.card)
+                    .clickable(onClick = onShowGuide)
+                    .padding(horizontal = 16.dp, vertical = 14.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text("How It Works", style = MaterialTheme.typography.bodyLarge, color = c.label, modifier = Modifier.weight(1f))
+                Text("›", style = MaterialTheme.typography.bodyLarge, color = c.secondary)
             }
 
             Spacer(Modifier.height(16.dp))

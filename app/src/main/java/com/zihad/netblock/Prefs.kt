@@ -36,4 +36,32 @@ class Prefs(context: Context) {
     var autoStart: Boolean
         get() = sp.getBoolean("autostart", true)
         set(value) { sp.edit().putBoolean("autostart", value).apply() }
+
+    /** Blocked-attempt counters per app (see BlockStats). */
+    var stats: Map<String, AppStat>
+        get() = (sp.getStringSet("stats", emptySet()) ?: emptySet())
+            .mapNotNull { entry ->
+                val p = entry.split('|')
+                if (p.size != 3) null else try {
+                    AppStat(p[0], p[1].toInt(), p[2].toLong())
+                } catch (_: Exception) {
+                    null
+                }
+            }
+            .associateBy { it.pkg }
+        set(value) {
+            sp.edit()
+                .putStringSet("stats", value.values.map { "${it.pkg}|${it.count}|${it.lastMs}" }.toHashSet())
+                .apply()
+        }
+
+    /** When counting started (epoch millis), 0 if nothing recorded yet. */
+    var statsSince: Long
+        get() = sp.getLong("stats_since", 0L)
+        set(value) { sp.edit().putLong("stats_since", value).apply() }
+
+    /** True once the first-run guide has been shown. */
+    var onboarded: Boolean
+        get() = sp.getBoolean("onboarded", false)
+        set(value) { sp.edit().putBoolean("onboarded", value).apply() }
 }

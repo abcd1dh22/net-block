@@ -41,8 +41,16 @@ class AppsViewModel(app: Application) : AndroidViewModel(app) {
     private val _update = MutableStateFlow<UpdateState>(UpdateState.Idle)
     val update: StateFlow<UpdateState> = _update.asStateFlow()
 
+    /** Read once at start; the guide is shown when this is false. */
+    val onboarded: Boolean = prefs.onboarded
+
     init {
+        BlockStats.load(app)
         viewModelScope.launch(Dispatchers.IO) { loadApps() }
+    }
+
+    fun markOnboarded() {
+        prefs.onboarded = true
     }
 
     private fun loadApps() {

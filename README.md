@@ -64,6 +64,8 @@ It uses Android's built-in VPN service as a local filter, so it needs **no root*
 | 📶 | **Wi-Fi and mobile data rules** | Block an app on both, on Wi-Fi only, or on mobile data only. Rules follow your current network automatically |
 | 🔲 | **Quick Settings tile** | Turn blocking on and off from the notification shade |
 | 🔁 | **Starts after reboot** | Blocking comes back on by itself after a restart (can be turned off) |
+| 📊 | **Activity log** | See how often each blocked app tried to connect, with time, protocol and address. Stored only on your phone |
+| 👋 | **First-run guide** | A short walkthrough explains the app and the VPN permission. Reopen it any time from Settings |
 | 🔔 | **Update check** | Tap *Check for updates* to see if a newer release is on GitHub |
 | ⚡ | **Instant apply** | Change a switch while blocking is on and it takes effect right away |
 | 🔍 | **Search and filter** | Find any app fast; switch between *All apps* and *Blocked* |
@@ -122,7 +124,7 @@ For Wi-Fi-only or mobile-only rules, the service watches which network is active
 - **No analytics, no ads, no accounts.**
 - **One optional request.** The `INTERNET` permission exists only for the *Check for updates* button, which asks GitHub for the latest release when you tap it. Nothing is sent automatically.
 - The VPN is local. Packets are dropped on your phone and never leave it.
-- Only the list of blocked package names is stored, on your device.
+- Rules and the activity log are stored only on your device. The log keeps the app, protocol, destination address and time of blocked attempts, never any content, and can be cleared at any time.
 
 ## Requirements
 
@@ -193,9 +195,12 @@ NetBlock/
 │   ├── AppsViewModel.kt       # App list, rules, update check
 │   ├── BlockTileService.kt    # Quick Settings tile
 │   ├── BootReceiver.kt        # Restores blocking after reboot
+│   ├── BlockStats.kt          # Blocked-attempt counters and log
 │   ├── Prefs.kt               # Saves rules and settings
 │   └── ui/
 │       ├── HomeScreen.kt      # Status card, search, filters, app list
+│       ├── ActivitySheet.kt   # Activity screen (attempt counts and log)
+│       ├── Onboarding.kt      # First-run guide
 │       ├── AppIcon.kt         # Lazy icon loading with cache
 │       └── Theme.kt           # Colors and typography
 ├── assets/                    # Logo and banner
@@ -206,12 +211,15 @@ NetBlock/
 
 - Android allows **one VPN at a time**. Starting another VPN app turns Net Block off.
 - Wi-Fi and mobile rules follow the network Android is using. If both are connected, Wi-Fi counts as active.
+- Matching an attempt to a specific app needs Android 10 or newer. On Android 8 and 9 it works when one app is blocked, otherwise attempts show as *Unknown app*.
 - Some phones block apps from starting after a reboot. If blocking does not return, allow auto-start for Net Block in the system settings.
 - Some manufacturers aggressively close background apps. If blocking stops, exclude Net Block from battery optimization.
 
 ## Ideas for the future
 
 - [x] Separate Wi-Fi and mobile-data rules
+- [x] Activity log of blocked attempts
+- [x] First-run guide
 - [x] Quick Settings tile
 - [x] Start after reboot
 - [x] In-app update check
