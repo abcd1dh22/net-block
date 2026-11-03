@@ -1,6 +1,9 @@
 package com.zihad.netblock
 
+import android.Manifest
+import android.content.pm.PackageManager
 import android.net.VpnService
+import android.os.Build
 import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.ComponentActivity
@@ -21,6 +24,10 @@ class MainActivity : ComponentActivity() {
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
             if (result.resultCode == RESULT_OK) BlockVpnService.start(this)
         }
+
+    // Asked once before turning protection on, so the status notification can show.
+    private val notificationPermission =
+        registerForActivityResult(ActivityResultContracts.RequestPermission()) { startProtection() }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         enableEdgeToEdge()
@@ -47,6 +54,16 @@ class MainActivity : ComponentActivity() {
             Toast.makeText(this, "Select at least one app to block first", Toast.LENGTH_SHORT).show()
             return
         }
+        val needsNotificationPermission = Build.VERSION.SDK_INT >= 33 &&
+            checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED
+        if (needsNotificationPermission) {
+            notificationPermission.launch(Manifest.permission.POST_NOTIFICATIONS)
+        } else {
+            startProtection()
+        }
+    }
+
+    private fun startProtection() {
         val intent = VpnService.prepare(this)
         if (intent == null) BlockVpnService.start(this) else vpnPermission.launch(intent)
     }

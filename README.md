@@ -67,6 +67,8 @@ It uses Android's built-in VPN service as a local filter, so it needs **no root*
 | 🔁 | **Starts after reboot** | Blocking comes back on by itself after a restart (can be turned off) |
 | 📊 | **Activity log** | See how often each blocked app tried to connect, with time, protocol and address. Stored only on your phone |
 | 👋 | **First-run guide** | A short walkthrough explains the app and the VPN permission. Reopen it any time from Settings |
+| 📌 | **Status notification** | While blocking is on, a notification shows the state and has a *Turn off* button. It also helps Android keep the service running |
+| 🔋 | **Keep Running guide** | Checks battery optimization and notifications, and shows the exact steps for Xiaomi, Samsung, Oppo, Vivo, Huawei, Tecno and others |
 | 🔔 | **Update check** | Tap *Check for updates* to see if a newer release is on GitHub |
 | ⚡ | **Instant apply** | Change a switch while blocking is on and it takes effect right away |
 | 🔍 | **Search and filter** | Find any app fast; switch between *All apps* and *Blocked* |
@@ -132,7 +134,9 @@ For Wi-Fi-only or mobile-only rules, the service watches which network is active
 - Android 8.0 (API 26) or newer
 - No root
 
-Permissions used: `INTERNET` (manual update check), `ACCESS_NETWORK_STATE` (Wi-Fi vs mobile rules), `RECEIVE_BOOT_COMPLETED` (start after reboot), and the VPN permission you grant on first use.
+Permissions used: `INTERNET` (manual update check), `ACCESS_NETWORK_STATE` (Wi-Fi vs mobile rules), `RECEIVE_BOOT_COMPLETED` (start after reboot), `FOREGROUND_SERVICE` and `POST_NOTIFICATIONS` (status notification), `REQUEST_IGNORE_BATTERY_OPTIMIZATIONS` (the *Allow* button in Keep Running), and the VPN permission you grant on first use.
+
+> If you publish on Google Play, the battery-optimization request is restricted by Play policy. Remove that permission and the *Allow* button first, or publish on GitHub and F-Droid.
 
 ## Build from source
 
@@ -201,6 +205,7 @@ NetBlock/
 │   └── ui/
 │       ├── DashboardScreen.kt # Home tab: status, network cards, live activity
 │       ├── HomeScreen.kt      # Tabs, Apps tab (search, filters, list), settings
+│       ├── KeepAliveSheet.kt  # Battery / notification guide and warning banner
 │       ├── ActivitySheet.kt   # Activity screen (attempt counts and log)
 │       ├── Onboarding.kt      # First-run guide
 │       ├── AppIcon.kt         # Lazy icon loading with cache
@@ -214,7 +219,7 @@ NetBlock/
 - Android allows **one VPN at a time**. Starting another VPN app turns Net Block off.
 - Wi-Fi and mobile rules follow the network Android is using. If both are connected, Wi-Fi counts as active.
 - Matching an attempt to a specific app needs Android 10 or newer. On Android 8 and 9 it works when one app is blocked, otherwise attempts show as *Unknown app*.
-- Some phones block apps from starting after a reboot. If blocking does not return, allow auto-start for Net Block in the system settings.
+- Some phones close background apps or block auto-start. Open **Settings → Keep Running** in the app for the steps for your phone.
 - Some manufacturers aggressively close background apps. If blocking stops, exclude Net Block from battery optimization.
 
 ## Ideas for the future

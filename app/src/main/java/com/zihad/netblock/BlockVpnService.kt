@@ -1,8 +1,14 @@
 package com.zihad.netblock
 
+import android.app.Notification
+import android.app.NotificationChannel
+import android.app.NotificationManager
+import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.content.pm.ServiceInfo
+import android.graphics.drawable.Icon
 import android.net.ConnectivityManager
 import android.net.Network
 import android.net.NetworkCapabilities
@@ -10,6 +16,7 @@ import android.net.NetworkRequest
 import android.net.VpnService
 import android.os.Build
 import android.os.ParcelFileDescriptor
+import androidx.core.app.ServiceCompat
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import java.io.FileInputStream
@@ -63,6 +70,7 @@ class BlockVpnService : VpnService() {
             return START_NOT_STICKY
         }
         prefs.active = true
+        startForegroundSafely(prefs.rules.size)
         startWatching()
         applyRules()
         return START_STICKY
@@ -102,6 +110,8 @@ class BlockVpnService : VpnService() {
                 (mode == BlockMode.WIFI && onWifi) ||
                 (mode == BlockMode.MOBILE && onMobile)
         }.keys
+
+        postNotification(rules.size, if (onWifi) "Wi-Fi" else if (onMobile) "Mobile data" else "No connection")
 
         val builder = Builder()
             .setSession("Net Block")
@@ -244,6 +254,68 @@ class BlockVpnService : VpnService() {
         return BlockStats.UNKNOWN
     }
 
+    // ---- Status notification (also keeps the service alive in the background) ----
+
+    private fun notificationManager() = getSystemService(NotificationManager::class.java)
+
+    private fun buildNotification(ruleCount: Int, where: String): Notification {
+        notificationManager().createNotificationChannel(
+            NotificationChannel(CHANNEL_ID, "Protection status", NotificationManager.IMPORTANCE_LOW).apply {
+                description = "Shown while Net Block is blocking apps"
+                setShowBadge(false)
+            }
+        )
+        val open = PendingIntent.getActivity(
+            this, 0,
+            Intent(this, MainActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP),
+            PendingIntent.FLAG_IMMUTABLE
+        )
+        val stop = PendingIntent.getService(
+            this, 1,
+            Intent(this, BlockVpnService::class.java).setAction(ACTION_STOP),
+            PendingIntent.FLAG_IMMUTABLE
+        )
+        val turnOff = Notification.Action.Builder(
+            Icon.createWithResource(this, R.drawable.ic_tile), "Turn off", stop
+        ).build()
+        return Notification.Builder(this, CHANNEL_ID)
+            .setSmallIcon(R.drawable.ic_tile)
+            .setContentTitle("Net Block is on")
+            .setContentText("$ruleCount ${if (ruleCount == 1) "app" else "apps"} blocked · $where")
+            .setCategory(Notification.CATEGORY_SERVICE)
+            .setOngoing(true)
+            .setOnlyAlertOnce(true)
+            .setContentIntent(open)
+            .addAction(turnOff)
+            .build()
+    }
+
+    private fun startForegroundSafely(ruleCount: Int) {
+        try {
+            val type = if (Build.VERSION.SDK_INT >= 34) {
+                ServiceInfo.FOREGROUND_SERVICE_TYPE_SYSTEM_EXEMPTED
+            } else {
+                ServiceInfo.FOREGROUND_SERVICE_TYPE_MANIFEST
+            }
+            ServiceCompat.startForeground(this, NOTIFICATION_ID, buildNotification(ruleCount, "Starting"), type)
+        } catch (_: Exception) {
+            // Android refused (for example a background restart). Blocking still works without it.
+        }
+    }
+
+    private fun postNotification(ruleCount: Int, where: String) {
+        try {
+            notificationManager().notify(NOTIFICATION_ID, buildNotification(ruleCount, where))
+        } catch (_: Exception) {
+            // Notifications are optional.
+        }
+    }
+
+    private fun clearNotification() {
+        try { stopForeground(STOP_FOREGROUND_REMOVE) } catch (_: Exception) {}
+        try { notificationManager().cancel(NOTIFICATION_ID) } catch (_: Exception) {}
+    }
+
     @Synchronized
     private fun closeTunnel() {
         try { tun?.close() } catch (_: Exception) {}
@@ -266,6 +338,7 @@ class BlockVpnService : VpnService() {
         stopWatching()
         closeTunnel()
         BlockStats.persist(applicationContext)
+        clearNotification()
         state.value = false
         stopSelf()
     }
@@ -281,12 +354,15 @@ class BlockVpnService : VpnService() {
         stopWatching()
         closeTunnel()
         BlockStats.persist(applicationContext)
+        clearNotification()
         state.value = false
         super.onDestroy()
     }
 
     companion object {
         private const val ACTION_STOP = "com.zihad.netblock.STOP"
+        private const val CHANNEL_ID = "protection"
+        private const val NOTIFICATION_ID = 1
         private val state = MutableStateFlow(false)
         val isRunning: StateFlow<Boolean> get() = state
 

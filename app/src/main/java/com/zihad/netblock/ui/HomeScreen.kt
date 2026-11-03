@@ -62,13 +62,18 @@ fun HomeScreen(
     var showSettings by remember { mutableStateOf(false) }
     var showActivity by remember { mutableStateOf(false) }
     var showGuide by remember { mutableStateOf(!vm.onboarded) }
+    var showKeepAlive by remember { mutableStateOf(false) }
 
     if (showSettings) {
         SettingsSheet(
             vm = vm,
             onDismiss = { showSettings = false },
-            onShowGuide = { showSettings = false; showGuide = true }
+            onShowGuide = { showSettings = false; showGuide = true },
+            onOpenKeepAlive = { showSettings = false; showKeepAlive = true }
         )
+    }
+    if (showKeepAlive) {
+        KeepAliveSheet(onDismiss = { showKeepAlive = false })
     }
     if (showActivity) {
         ActivitySheet(apps = apps, onDismiss = { showActivity = false })
@@ -89,6 +94,7 @@ fun HomeScreen(
                     onOpenApps = { tab = 1 },
                     onOpenActivity = { showActivity = true },
                     onOpenSettings = { showSettings = true },
+                    onOpenKeepAlive = { showKeepAlive = true },
                     modifier = Modifier.padding(padding)
                 )
             } else {
@@ -450,7 +456,12 @@ private fun IosSwitch(checked: Boolean, onCheckedChange: (Boolean) -> Unit, onCo
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun SettingsSheet(vm: AppsViewModel, onDismiss: () -> Unit, onShowGuide: () -> Unit) {
+private fun SettingsSheet(
+    vm: AppsViewModel,
+    onDismiss: () -> Unit,
+    onShowGuide: () -> Unit,
+    onOpenKeepAlive: () -> Unit
+) {
     val c = LocalAppColors.current
     val autoStart by vm.autoStart.collectAsState()
     val update by vm.update.collectAsState()
@@ -519,6 +530,28 @@ private fun SettingsSheet(vm: AppsViewModel, onDismiss: () -> Unit, onShowGuide:
                     Text("Version", style = MaterialTheme.typography.bodyLarge, color = c.label, modifier = Modifier.weight(1f))
                     Text(BuildConfig.VERSION_NAME, style = MaterialTheme.typography.bodyLarge, color = c.secondary)
                 }
+            }
+
+            Spacer(Modifier.height(16.dp))
+
+            Row(
+                Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(14.dp))
+                    .background(c.card)
+                    .clickable(onClick = onOpenKeepAlive)
+                    .padding(horizontal = 16.dp, vertical = 14.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Column(Modifier.weight(1f)) {
+                    Text("Keep Running", style = MaterialTheme.typography.bodyLarge, color = c.label)
+                    Text(
+                        "Battery and notification settings that keep blocking on.",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = c.secondary
+                    )
+                }
+                Text("›", style = MaterialTheme.typography.bodyLarge, color = c.secondary)
             }
 
             Spacer(Modifier.height(16.dp))

@@ -38,6 +38,12 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.platform.LocalContext
+import androidx.lifecycle.compose.LifecycleResumeEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.unit.dp
 import com.zihad.netblock.AppItem
 import com.zihad.netblock.AppsViewModel
@@ -57,9 +63,16 @@ fun DashboardScreen(
     onOpenApps: () -> Unit,
     onOpenActivity: () -> Unit,
     onOpenSettings: () -> Unit,
+    onOpenKeepAlive: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val c = LocalAppColors.current
+    val context = LocalContext.current
+    var batteryRestricted by remember { mutableStateOf(false) }
+    LifecycleResumeEffect(Unit) {
+        batteryRestricted = isBatteryRestricted(context)
+        onPauseOrDispose { }
+    }
     val net by vm.network.collectAsState()
     val speed by vm.speed.collectAsState()
     val stats by BlockStats.stats.collectAsState()
@@ -107,6 +120,10 @@ fun DashboardScreen(
             BigStatusCard(running = running, blocked = rules.size, attempts = totalAttempts)
             Spacer(Modifier.height(12.dp))
             ProtectionButton(running = running, onClick = onToggleProtection)
+            if (running && batteryRestricted) {
+                Spacer(Modifier.height(12.dp))
+                BatteryBanner(onClick = onOpenKeepAlive)
+            }
 
             Spacer(Modifier.height(24.dp))
             SectionLabel("NETWORK")

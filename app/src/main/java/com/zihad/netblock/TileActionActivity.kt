@@ -1,7 +1,10 @@
 package com.zihad.netblock
 
+import android.Manifest
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.net.VpnService
+import android.os.Build
 import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.ComponentActivity
@@ -22,6 +25,9 @@ class TileActionActivity : ComponentActivity() {
             finish()
         }
 
+    private val notificationPermission =
+        registerForActivityResult(ActivityResultContracts.RequestPermission()) { proceed() }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -32,6 +38,16 @@ class TileActionActivity : ComponentActivity() {
             return
         }
 
+        val needsNotificationPermission = Build.VERSION.SDK_INT >= 33 &&
+            checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED
+        if (needsNotificationPermission) {
+            notificationPermission.launch(Manifest.permission.POST_NOTIFICATIONS)
+        } else {
+            proceed()
+        }
+    }
+
+    private fun proceed() {
         val consent = VpnService.prepare(this)
         if (consent == null) {
             BlockVpnService.start(this)
