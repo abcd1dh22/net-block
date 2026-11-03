@@ -291,13 +291,21 @@ class BlockVpnService : VpnService() {
         val isRunning: StateFlow<Boolean> get() = state
 
         fun start(context: Context) {
-            context.startService(Intent(context, BlockVpnService::class.java))
+            try {
+                context.startService(Intent(context, BlockVpnService::class.java))
+            } catch (_: IllegalStateException) {
+                // Android refused a background start. Callers start from a visible screen.
+            }
         }
 
         fun stop(context: Context) {
-            context.startService(
-                Intent(context, BlockVpnService::class.java).setAction(ACTION_STOP)
-            )
+            try {
+                context.startService(
+                    Intent(context, BlockVpnService::class.java).setAction(ACTION_STOP)
+                )
+            } catch (_: IllegalStateException) {
+                // Not running in the background; nothing to stop.
+            }
         }
     }
 }

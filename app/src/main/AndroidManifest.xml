@@ -32,6 +32,15 @@
             </intent-filter>
         </activity>
 
+        <!-- Invisible helper the Quick Settings tile uses to turn protection on. -->
+        <activity
+            android:name=".TileActionActivity"
+            android:exported="false"
+            android:excludeFromRecents="true"
+            android:noHistory="true"
+            android:taskAffinity=""
+            android:theme="@style/Theme.NetBlock.Transparent" />
+
         <service
             android:name=".BlockVpnService"
             android:exported="false"
