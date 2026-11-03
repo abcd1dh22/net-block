@@ -219,4 +219,5 @@ class AppsViewModel(app: Application) : AndroidViewModel(app) {
         }
         return false
     }
+
 }
