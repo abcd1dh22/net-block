@@ -1,21 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
 
-    <!-- Only used by the manual "Check for updates" button (one request to GitHub). -->
-    <uses-permission android:name="android.permission.INTERNET" />
-    <!-- Lets the app notice Wi-Fi vs mobile data, for per-network rules. -->
-    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
-    <!-- Keeps blocking alive with a status notification while it is on. -->
-    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
-    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SYSTEM_EXEMPTED" />
-    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
-    <!-- Lets the app ask to be excluded from battery optimization. -->
-    <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />
-    <!-- Restores blocking after the phone restarts. -->
-    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+    <uses-permission
+        android:name="android.permission.PACKAGE_USAGE_STATS"
+        tools:ignore="ProtectedPermissions" />
 
-    <!-- Lets the app list apps that have a launcher icon, without QUERY_ALL_PACKAGES -->
     <queries>
+        <intent>
+            <action android:name="android.intent.action.MAIN" />
+            <category android:name="android.intent.category.HOME" />
+        </intent>
         <intent>
             <action android:name="android.intent.action.MAIN" />
             <category android:name="android.intent.category.LAUNCHER" />
@@ -23,11 +18,12 @@
     </queries>
 
     <application
-        android:allowBackup="true"
+        android:allowBackup="false"
         android:icon="@mipmap/ic_launcher"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:label="@string/app_name"
-        android:theme="@style/Theme.NetBlock">
+        android:supportsRtl="true"
+        android:theme="@style/Theme.TimeBlocker">
 
         <activity
             android:name=".MainActivity"
@@ -38,42 +34,35 @@
             </intent-filter>
         </activity>
 
-        <!-- Invisible helper the Quick Settings tile uses to turn protection on. -->
         <activity
-            android:name=".TileActionActivity"
+            android:name=".OnboardingActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".AppUsageActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".AppListActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".BlockActivity"
             android:exported="false"
+            android:theme="@style/Theme.TimeBlocker.Block"
             android:excludeFromRecents="true"
-            android:noHistory="true"
-            android:taskAffinity=""
-            android:theme="@style/Theme.NetBlock.Transparent" />
+            android:launchMode="singleTask" />
 
         <service
-            android:name=".BlockVpnService"
-            android:exported="false"
-            android:foregroundServiceType="systemExempted"
-            android:permission="android.permission.BIND_VPN_SERVICE">
-            <intent-filter>
-                <action android:name="android.net.VpnService" />
-            </intent-filter>
-        </service>
-
-        <service
-            android:name=".BlockTileService"
+            android:name=".BlockerService"
             android:exported="true"
-            android:icon="@drawable/ic_tile"
-            android:label="@string/app_name"
-            android:permission="android.permission.BIND_QUICK_SETTINGS_TILE">
+            android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE">
             <intent-filter>
-                <action android:name="android.service.quicksettings.action.QS_TILE" />
+                <action android:name="android.accessibilityservice.AccessibilityService" />
             </intent-filter>
+            <meta-data
+                android:name="android.accessibilityservice"
+                android:resource="@xml/accessibility_config" />
         </service>
-
-        <receiver
-            android:name=".BootReceiver"
-            android:exported="true">
-            <intent-filter>
-                <action android:name="android.intent.action.BOOT_COMPLETED" />
-            </intent-filter>
-        </receiver>
     </application>
 </manifest>

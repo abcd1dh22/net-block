@@ -1,36 +1,29 @@
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
-    id("org.jetbrains.kotlin.plugin.compose")
 }
 
-// Replace with your GitHub "username/repo". The in-app update check reads releases from here.
-val githubRepo = "USERNAME/NetBlock"
-
-// CI passes these so every release gets a new version. Local builds use the defaults.
-val appVersionName = (findProperty("appVersionName") as String?)?.removePrefix("v") ?: "1.0.0"
-val appVersionCode = (findProperty("appVersionCode") as String?)?.toIntOrNull() ?: 1
+// ── Release signing: CI (বা লোকাল) এনভায়রনমেন্ট ভ্যারিয়েবল থেকে আসে ──
+// KEYSTORE_PATH না থাকলে release বিল্ড debug key দিয়ে সাইন হবে (ইনস্টল করা যাবে, কিন্তু প্রোডাকশনের জন্য নয়)
+val keystorePath: String? = System.getenv("KEYSTORE_PATH")?.takeIf { it.isNotBlank() }
 
 android {
-    namespace = "com.zihad.netblock"
-    compileSdk = 35
+    namespace = "com.example.timerblock"
+    compileSdk = 34
 
     defaultConfig {
-        applicationId = "com.zihad.netblock"
+        applicationId = "com.example.timerblock"
         minSdk = 26
-        targetSdk = 35
-        versionCode = appVersionCode
-        versionName = appVersionName
-        buildConfigField("String", "GITHUB_REPO", "\"$githubRepo\"")
+        targetSdk = 34
+        // CI থেকে -PversionCode / -PversionName দিয়ে ওভাররাইড হয়
+        versionCode = (project.findProperty("versionCode") as? String)?.toIntOrNull() ?: 1
+        versionName = (project.findProperty("versionName") as? String) ?: "1.0"
     }
 
-    // A permanent release key is read from environment variables (set by GitHub Actions).
-    // Without it the release build falls back to the debug key so it still installs.
-    val keystorePath = System.getenv("KEYSTORE_FILE")
     signingConfigs {
-        if (keystorePath != null && file(keystorePath).exists()) {
+        keystorePath?.let { path ->
             create("release") {
-                storeFile = file(keystorePath)
+                storeFile = file(path)
                 storePassword = System.getenv("KEYSTORE_PASSWORD")
                 keyAlias = System.getenv("KEY_ALIAS")
                 keyPassword = System.getenv("KEY_PASSWORD")
@@ -42,30 +35,27 @@ android {
         release {
             isMinifyEnabled = true
             isShrinkResources = true
-            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"))
-            signingConfig = signingConfigs.findByName("release") ?: signingConfigs.getByName("debug")
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro"
+            )
+            signingConfig = if (keystorePath != null) {
+                signingConfigs.getByName("release")
+            } else {
+                signingConfigs.getByName("debug")
+            }
         }
     }
+
+    lint {
+        abortOnError = false
+    }
+
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
     }
-    kotlinOptions { jvmTarget = "17" }
-    buildFeatures {
-        compose = true
-        buildConfig = true
+    kotlinOptions {
+        jvmTarget = "17"
     }
-}
-
-dependencies {
-    val bom = platform("androidx.compose:compose-bom:2024.09.03")
-    implementation(bom)
-    implementation("androidx.core:core-ktx:1.13.1")
-    implementation("androidx.activity:activity-compose:1.9.2")
-    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.8.6")
-    implementation("androidx.lifecycle:lifecycle-runtime-compose:2.8.6")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.8.1")
-    implementation("androidx.compose.ui:ui")
-    implementation("androidx.compose.material3:material3")
-    implementation("androidx.compose.material:material-icons-extended")
 }

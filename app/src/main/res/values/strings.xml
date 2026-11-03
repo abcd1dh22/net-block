@@ -1,3 +1,139 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">Net Block</string>
+    <string name="app_name">Time Blocker</string>
+    <string name="service_desc">দৈনিক ফোন ব্যবহারের লিমিট, ডাউনটাইম বা ফোকাস লকে অন্য অ্যাপ খোলা ব্লক করে। শুধু অ্যাপের নাম দেখা হয়, স্ক্রিনের লেখা পড়া হয় না।</string>
+    <string name="back">‹ পেছনে</string>
+
+    <!-- Home -->
+    <string name="title">স্ক্রিন টাইম</string>
+    <string name="banner_title">⚠️ সেটআপ অসম্পূর্ণ</string>
+    <string name="banner_body">ব্লকিং কাজ করার জন্য কিছু অনুমতি বাকি আছে।</string>
+    <string name="banner_btn">এখনই সেট করুন</string>
+    <string name="hero_limit">দৈনিক লিমিট</string>
+    <string name="hero_left">বাকি আছে</string>
+    <string name="sec_week">গত ৭ দিন</string>
+    <string name="sec_apps">সবচেয়ে বেশি ব্যবহৃত অ্যাপ</string>
+    <string name="row_all_apps">সব অ্যাপ দেখুন</string>
+    <string name="section_limit">লিমিট</string>
+    <string name="row_enabled">দৈনিক লিমিট চালু</string>
+    <string name="row_limit">সময়সীমা</string>
+    <string name="footer_limit">লিমিট শেষ হলে ফোন, সেটিংস, কীবোর্ড ও অনুমোদিত অ্যাপ ছাড়া সব অ্যাপ ব্লক হবে।</string>
+    <string name="sec_down">ডাউনটাইম</string>
+    <string name="row_down">ডাউনটাইম চালু</string>
+    <string name="row_down_start">শুরু</string>
+    <string name="row_down_end">শেষ</string>
+    <string name="footer_down">এই সময়ে লিমিট বাকি থাকলেও অনুমোদিত অ্যাপ ছাড়া সব অ্যাপ বন্ধ থাকবে। যেমন ঘুমের সময়।</string>
+    <string name="section_perm">অ্যাপ ও অনুমতি</string>
+    <string name="row_usage">Usage Access</string>
+    <string name="row_acc">Accessibility সার্ভিস</string>
+    <string name="row_guide">ব্যবহার গাইড দেখুন</string>
+    <string name="footer_perm">Accessibility অপশন ধূসর থাকলে: Settings → Apps → Time Blocker → ⋮ → Allow restricted settings।</string>
+    <string name="footer_app">Time Blocker • সব ডেটা শুধু আপনার ফোনে থাকে</string>
+
+    <!-- Focus lock -->
+    <string name="sec_lock">ফোকাস লক</string>
+    <string name="lock_title_idle">অ্যাপ লক করুন</string>
+    <string name="lock_body_idle">নির্দিষ্ট সময়ের জন্য বা সারাদিনের জন্য অনুমোদিত অ্যাপ ছাড়া সব অ্যাপ বন্ধ রাখুন। সময় শেষ হলে আবার ব্যবহার করা যাবে।</string>
+    <string name="lock_start">লক শুরু করুন</string>
+    <string name="lock_cancel">লক বাতিল করুন</string>
+    <string name="row_strict">কঠোর মোড</string>
+    <string name="footer_strict">চালু থাকলে লক শুরু হওয়ার পর সময় শেষ না হওয়া পর্যন্ত বাতিল করা যাবে না।</string>
+
+    <!-- App scope -->
+    <string name="sec_scope">অ্যাপ নির্বাচন</string>
+    <string name="row_scope">ব্লকের পরিধি</string>
+    <string name="row_blocked">ব্লক হবে এমন অ্যাপ</string>
+    <string name="row_allowed">লক হবে না এমন অ্যাপ</string>
+    <string name="footer_scope">"লক হবে না" তালিকার অ্যাপ ফোকাস লক, ডাউনটাইম বা লিমিট, যাই চলুক সবসময় খোলা যাবে।</string>
+
+    <!-- App usage / list screens -->
+    <string name="app_usage_title">অ্যাপ ব্যবহার</string>
+    <string name="seg_today">আজ</string>
+    <string name="seg_week">৭ দিন</string>
+    <string name="total_label">মোট ব্যবহার</string>
+    <string name="allowed_title">লক হবে না এমন অ্যাপ</string>
+    <string name="allowed_desc">এখানে চালু করা অ্যাপগুলো ফোকাস লক, ডাউনটাইম বা লিমিট, যাই চলুক সবসময় খোলা যাবে।</string>
+    <string name="blocked_title">ব্লক হবে এমন অ্যাপ</string>
+    <string name="blocked_desc">শুধু এখানে চালু করা অ্যাপগুলোই ব্লক হবে। বাকি সব অ্যাপ সবসময় খোলা থাকবে।</string>
+    <string name="strict_notice">কঠোর লক চলছে, তাই এখন তালিকা বদলানো যাবে না।</string>
+
+    <!-- Block screen -->
+    <string name="block_title">আজকের লিমিট শেষ</string>
+    <string name="block_title_downtime">ডাউনটাইম চলছে</string>
+    <string name="block_title_lock">ফোকাস লক চলছে</string>
+    <string name="block_sub">আজ আপনি ফোন ব্যবহার করেছেন</string>
+    <string name="block_btn">হোম-এ ফিরে যান</string>
+
+    <!-- Onboarding -->
+    <string name="ob_skip">স্কিপ</string>
+    <string name="ob_next">পরবর্তী</string>
+    <string name="ob_lets">শুরু করা যাক</string>
+    <string name="ob_start">হোমে যান</string>
+    <string name="ob_later">এখন নয়</string>
+
+    <string name="ob_welcome_title">Time Blocker</string>
+    <string name="ob_welcome_body">ফোনে কত সময় দিচ্ছেন তা বুঝুন, আর নিজের ঠিক করা সীমার মধ্যে থাকুন।</string>
+    <string name="ob_f1_t">ব্যবহারের পুরো হিসাব</string>
+    <string name="ob_f1_b">কোন অ্যাপে কত সময় গেল, দিন ও সপ্তাহ ধরে</string>
+    <string name="ob_f2_t">দৈনিক লিমিট</string>
+    <string name="ob_f2_b">সময় শেষ হলে অ্যাপ নিজে থেকেই ব্লক</string>
+    <string name="ob_f3_t">ডাউনটাইম</string>
+    <string name="ob_f3_b">ঘুমের সময় ফোন থেকে দূরে থাকুন</string>
+    <string name="ob_f4_t">ফোকাস লক</string>
+    <string name="ob_f4_b">নির্দিষ্ট সময় বা সারাদিনের জন্য বন্ধ</string>
+
+    <string name="ob_how_title">কীভাবে কাজ করে</string>
+    <string name="ob_how_body">মাত্র তিনটি ধাপ</string>
+    <string name="ob_step1_t">লিমিট ঠিক করুন</string>
+    <string name="ob_step1_b">স্লাইডার দিয়ে দিনে সর্বোচ্চ কত সময় ফোন ব্যবহার করবেন তা বেছে নিন।</string>
+    <string name="ob_step2_t">ব্যবহার গোনা হয়</string>
+    <string name="ob_step2_b">ফোনের নিজস্ব হিসাব থেকে আজ কত সময় গেছে তা দেখানো হয়।</string>
+    <string name="ob_step3_t">লিমিট শেষে ব্লক</string>
+    <string name="ob_step3_b">লিমিট পার হলে অন্য অ্যাপ খুললে একটি মেসেজ স্ক্রিন আসবে। ফোন, সেটিংস ও কীবোর্ড সবসময় চালু থাকবে।</string>
+
+    <string name="ob_why">কেন দরকার</string>
+    <string name="ob_not">যা করা হয় না</string>
+    <string name="ob_how">কীভাবে দেবেন</string>
+
+    <string name="ob_usage_title">ব্যবহারের তথ্য</string>
+    <string name="ob_usage_body">আজ কত সময় ফোন ব্যবহার করেছেন তা জানার জন্য এই অনুমতি লাগে।</string>
+    <string name="ob_usage_why">প্রতিটি অ্যাপ আজ কত সময় খোলা ছিল তা পড়ে মোট সময় ও লিমিট হিসাব করতে।</string>
+    <string name="ob_usage_not">কোনো তথ্য ইন্টারনেটে যায় না। এই অ্যাপের ইন্টারনেট পারমিশনই নেই, সব হিসাব শুধু আপনার ফোনে থাকে।</string>
+    <string name="ob_usage_how">বাটন চাপুন → তালিকা থেকে Time Blocker বেছে নিন → \"Allow usage access\" চালু করুন → ফিরে আসুন।</string>
+    <string name="ob_grant_usage">অনুমতি দিন</string>
+
+    <string name="ob_acc_title">অ্যাক্সেসিবিলিটি সার্ভিস</string>
+    <string name="ob_acc_body">লিমিট শেষ হলে অ্যাপ খোলার মুহূর্তে ব্লক স্ক্রিন দেখানোর জন্য এটি দরকার।</string>
+    <string name="ob_acc_why">কোন অ্যাপ এখন খোলা হচ্ছে তা ধরে লিমিট শেষ হলে ব্লক স্ক্রিন সামনে আনতে।</string>
+    <string name="ob_acc_not">স্ক্রিনের লেখা, পাসওয়ার্ড বা মেসেজ পড়া হয় না। শুধু অ্যাপের নাম দেখা হয়।</string>
+    <string name="ob_acc_how">বাটন চাপুন → Installed apps (বা Downloaded apps) → Time Blocker → চালু করুন। অপশন ধূসর থাকলে নিচের \"অ্যাপ ইনফো\" লিংকে গিয়ে ⋮ → Allow restricted settings দিন, তারপর আবার চেষ্টা করুন।</string>
+    <string name="ob_grant_acc">সার্ভিস চালু করুন</string>
+    <string name="ob_appinfo">অপশন ধূসর? অ্যাপ ইনফো খুলুন</string>
+
+    <string name="ob_done_title">সব প্রস্তুত!</string>
+    <string name="ob_done_ok">সব অনুমতি দেওয়া আছে। এবার হোম স্ক্রিনে গিয়ে দৈনিক লিমিট ঠিক করুন।</string>
+    <string name="ob_done_partial">কিছু অনুমতি বাকি আছে। হোম স্ক্রিনের উপরের কমলা কার্ড থেকে পরে দিতে পারবেন।</string>
+
+    <!-- Soft UI -->
+    <string name="hero_title">আজকের ব্যবহার</string>
+    <string name="sec_top_apps">শীর্ষ অ্যাপ</string>
+    <string name="quick_avg">৭ দিনের গড়</string>
+    <string name="quick_down">ডাউনটাইম</string>
+    <string name="page_insights">পরিসংখ্যান</string>
+    <string name="card_week">গত ৭ দিন</string>
+    <string name="avg_label">দৈনিক গড়</string>
+    <string name="card_split">অ্যাপ অনুযায়ী ভাগ</string>
+    <string name="card_all_apps">সব অ্যাপ</string>
+    <string name="page_rules">নিয়ম</string>
+    <string name="rule_limit">দৈনিক লিমিট</string>
+    <string name="rule_down">ডাউনটাইম</string>
+    <string name="rule_strict">কঠোর মোড</string>
+    <string name="rule_apps">অ্যাপ নির্বাচন</string>
+    <string name="start_label">শুরু</string>
+    <string name="end_label">শেষ</string>
+    <string name="page_setup">সেটআপ</string>
+    <string name="setup_perms">অনুমতি</string>
+    <string name="privacy_title">প্রাইভেসি</string>
+    <string name="privacy_body">এই অ্যাপে ইন্টারনেট পারমিশনই নেই। আপনার ব্যবহারের সব হিসাব শুধু এই ফোনেই থাকে, কোথাও পাঠানো হয় না। Accessibility সার্ভিস শুধু অ্যাপের নাম দেখে, স্ক্রিনের লেখা বা পাসওয়ার্ড পড়ে না।</string>
+    <string name="nav_focus">ফোকাস লক</string>
 </resources>

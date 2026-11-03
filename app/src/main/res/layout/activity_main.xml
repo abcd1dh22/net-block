@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/ui_bg"
+    android:fitsSystemWindows="true">
+
+    <include layout="@layout/page_home" />
+    <include layout="@layout/page_insights" />
+    <include layout="@layout/page_rules" />
+    <include layout="@layout/page_setup" />
+
+    <!-- ভাসমান নেভিগেশন বার -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="68dp"
+        android:layout_gravity="bottom"
+        android:layout_marginStart="18dp"
+        android:layout_marginEnd="18dp"
+        android:layout_marginBottom="16dp"
+        android:background="@drawable/bg_nav_bar"
+        android:elevation="10dp"
+        android:orientation="horizontal">
+
+            <FrameLayout
+                android:id="@+id/navHome"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:background="?android:attr/selectableItemBackgroundBorderless"
+                android:clickable="true"
+                android:focusable="true">
+
+                <View
+                    android:id="@+id/pillHome"
+                    android:layout_width="52dp"
+                    android:layout_height="40dp"
+                    android:layout_gravity="center"
+                    android:background="@drawable/bg_nav_active" />
+
+                <ImageView
+                    android:id="@+id/icHome"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:layout_gravity="center"
+                    android:importantForAccessibility="no"
+                    android:src="@drawable/ic_home" />
+            </FrameLayout>
+
+
+            <FrameLayout
+                android:id="@+id/navInsights"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:background="?android:attr/selectableItemBackgroundBorderless"
+                android:clickable="true"
+                android:focusable="true">
+
+                <View
+                    android:id="@+id/pillInsights"
+                    android:layout_width="52dp"
+                    android:layout_height="40dp"
+                    android:layout_gravity="center"
+                    android:background="@drawable/bg_nav_active" />
+
+                <ImageView
+                    android:id="@+id/icInsights"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:layout_gravity="center"
+                    android:importantForAccessibility="no"
+                    android:src="@drawable/ic_chart" />
+            </FrameLayout>
+
+        <Space
+            android:layout_width="76dp"
+            android:layout_height="match_parent" />
+
+            <FrameLayout
+                android:id="@+id/navRules"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:background="?android:attr/selectableItemBackgroundBorderless"
+                android:clickable="true"
+                android:focusable="true">
+
+                <View
+                    android:id="@+id/pillRules"
+                    android:layout_width="52dp"
+                    android:layout_height="40dp"
+                    android:layout_gravity="center"
+                    android:background="@drawable/bg_nav_active" />
+
+                <ImageView
+                    android:id="@+id/icRules"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:layout_gravity="center"
+                    android:importantForAccessibility="no"
+                    android:src="@drawable/ic_tune" />
+            </FrameLayout>
+
+
+            <FrameLayout
+                android:id="@+id/navSetup"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:background="?android:attr/selectableItemBackgroundBorderless"
+                android:clickable="true"
+                android:focusable="true">
+
+                <View
+                    android:id="@+id/pillSetup"
+                    android:layout_width="52dp"
+                    android:layout_height="40dp"
+                    android:layout_gravity="center"
+                    android:background="@drawable/bg_nav_active" />
+
+                <ImageView
+                    android:id="@+id/icSetup"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:layout_gravity="center"
+                    android:importantForAccessibility="no"
+                    android:src="@drawable/ic_gear" />
+            </FrameLayout>
+
+    </LinearLayout>
+
+    <ImageView
+        android:id="@+id/btnFocus"
+        android:layout_width="64dp"
+        android:layout_height="64dp"
+        android:layout_gravity="bottom|center_horizontal"
+        android:layout_marginBottom="28dp"
+        android:background="@drawable/bg_fab"
+        android:contentDescription="@string/nav_focus"
+        android:elevation="14dp"
+        android:padding="19dp"
+        android:src="@drawable/ic_lock" />
+</FrameLayout>

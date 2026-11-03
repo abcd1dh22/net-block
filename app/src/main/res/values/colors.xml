@@ -1,3 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="app_bg">#F2F2F7</color>
+    <color name="ui_bg">#F3F2F9</color>
+    <color name="ui_card">#FFFFFF</color>
+    <color name="ui_label">#15142B</color>
+    <color name="ui_secondary">#7A7992</color>
+    <color name="ui_separator">#E9E8F2</color>
+    <color name="ui_primary">#5B4DFF</color>
+    <color name="ui_primary_soft">#E6E3FF</color>
+    <color name="ui_green">#2DBE8D</color>
+    <color name="ui_orange">#FF8A4C</color>
+    <color name="ui_red">#FF5470</color>
+    <color name="ui_track">#E9E7F6</color>
+    <color name="ui_chip_bg">#F1F0F8</color>
+    <color name="ui_switch_off">#D9D8E6</color>
+    <color name="ui_chevron">#B5B4C8</color>
+    <color name="ui_warning_bg">#FFF1E6</color>
+    <color name="ui_segment_bg">#E9E8F2</color>
+    <color name="ui_segment_sel">#FFFFFF</color>
+
+    <color name="pastel_peach">#FFD6C0</color>
+    <color name="pastel_mint">#BFEFDA</color>
+    <color name="pastel_sky">#C6E2FF</color>
+    <color name="pastel_lemon">#FFEFAE</color>
+    <color name="pastel_rose">#FFD0E0</color>
+    <color name="pastel_lilac">#D8D2FF</color>
+
+    <color name="block_bg">#12102B</color>
+    <color name="block_secondary">#B9B7DC</color>
+    <color name="ic_launcher_background">#5B4DFF</color>
 </resources>
